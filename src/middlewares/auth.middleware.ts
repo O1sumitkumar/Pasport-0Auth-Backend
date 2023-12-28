@@ -5,9 +5,9 @@ import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
 import { UserModel } from '@models/users.model';
 
-const getAuthorization = req => {
-  const coockie = req.cookies['Authorization'];
-  if (coockie) return coockie;
+const getAuthorization = (req: RequestWithUser) => {
+  const cookie = req.cookies['Authorization'];
+  if (cookie) return cookie;
 
   const header = req.header('Authorization');
   if (header) return header.split('Bearer ')[1];
@@ -15,12 +15,12 @@ const getAuthorization = req => {
   return null;
 };
 
-export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+export const AuthMiddleware = async (req: RequestWithUser, _res: Response, next: NextFunction) => {
   try {
     const Authorization = getAuthorization(req);
 
     if (Authorization) {
-      const { _id } = (await verify(Authorization, SECRET_KEY)) as DataStoredInToken;
+      const { _id } = verify(Authorization, SECRET_KEY) as DataStoredInToken;
       const findUser = await UserModel.findById(_id);
 
       if (findUser) {
